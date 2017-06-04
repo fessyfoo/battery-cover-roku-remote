@@ -206,13 +206,16 @@ module end_rib(angle = 90, lwidth = slider_depth) {
 }
 
 module endcap() {
-  union() {
-
-    end_slider();
-    // TODO better way to close this surface.
-    for (angle = [0:180/30:180]) {
-      end_rib(angle);
+  difference() {
+    union() {
+      end_slider();
+      // TODO better way to close this surface.
+      for (angle = [0:180/30:180]) {
+        end_rib(angle);
+      }
     }
+    translate([-rear_end_depth,-1.5,-slider_depth])
+    cube(3);
   }
 }
 
