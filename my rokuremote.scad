@@ -193,7 +193,7 @@ function squish(angle) =
         f = e + c,
         R = f / sin(t)
       )
-      R;
+      (R + 0.8 * sin(t)); // should just be R? had to fudge it by eye :(
 
 module end_rib(angle = 90, lwidth = slider_depth) {
   //squish_angle = asin(sin(angle));
