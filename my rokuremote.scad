@@ -12,8 +12,9 @@ stop_depth    = 3;
 stop_length   = 4;
 stop_height   = 1.5;
 rear_stop_offset = 6;
+rear_flat     = 10;
 
-rear_end_radius   = width/2 - thickness - rear_stop_offset;
+rear_end_radius   = (width - rear_flat) / 2;
 rear_end_depth    = rear_end_radius + slider_depth;
 
 clip_length       = 10;
@@ -118,7 +119,7 @@ shell_height = height - slider_depth;
 shell_radius = (shell_height / 2) + ((width * width) / (8 * shell_height));
 
 module halfshell_curve() {
-translate([shell_height - shell_radius, 0,0])
+  translate([shell_height - shell_radius, 0,0])
   difference() {
     quartercircle(shell_radius);
     quartercircle(shell_radius - thickness);
@@ -139,16 +140,13 @@ module shell(length) {
 
 
 module halfendcurve() {
-  rear_flat = rear_stop_offset * 2;
-  radius = width/2 - thickness - rear_flat/2;
-
-  translate([0, rear_stop_offset + thickness])
+  translate([0, rear_flat/2  ])
   difference() {
-    quartercircle(radius);
-    quartercircle(radius - thickness);
+    quartercircle(rear_end_radius);
+    quartercircle(rear_end_radius - thickness);
   }
-  translate([radius - thickness,0,0])
-  square([thickness, rear_stop_offset + thickness]);
+  translate([rear_end_radius - thickness,0,0])
+  square([thickness, rear_flat / 2]);
 }
 
 module endcurve() {
@@ -206,6 +204,18 @@ module battery_cover_with_cutouts() {
     battery_cover();
     translate([10, -width/2, slider_depth])
     cube([(length - rear_end_depth )/2 - 10, width, 3]);
+  }
+}
+
+module battery_cover_skeleton() {
+  difference () {
+    battery_cover();
+    translate([slider_depth, -width/2, 0])
+    cube([(length - rear_end_depth)/2 - slider_depth/2 - 10 , width, height]);
+
+    translate([slider_depth + 20, -width/2, 0])
+    cube([(length - rear_end_depth)/2 - slider_depth/2 , width, height]);
+
   }
 }
 
