@@ -55,7 +55,6 @@ module stop() {
 module end_stop(offset) {
   zpos = -slider_depth/2;
 
-  echo("offset", offset);
   translate([-offset, rear_stop_offset,zpos])
   stop();
 }
@@ -172,19 +171,48 @@ module end_slider() {
   translate([-slider_depth,0,0]) sliders(slider_depth);
 }
 
+angle_slider_depth = slider_depth / (width/2);
+angle_rear_flat    = 90 - atan((rear_flat/2) /  rear_end_depth);
+echo("angle_slider_depth:", angle_slider_depth);
+echo("angle_rear_flat :", angle_rear_flat);
+function squish(angle) = 
+  angle < angle_slider_depth ? 
+    width/2 / cos(angle) : 
+    angle > angle_rear_flat ? 
+      (rear_end_radius + slider_depth) / sin(angle) :
+      let(
+        t = angle,
+        c = slider_depth,
+        r = rear_end_radius,
+        a = width / 2,
+
+        B = a * tan(t),
+        d = B - c,
+        u = atan(d/r),
+        e = r * sin(u),
+        f = e + c,
+        R = f / sin(t)
+      )
+      R;
+
+module end_rib(angle = 90, lwidth = slider_depth) {
+  //squish_angle = asin(sin(angle));
+  squish_angle = asin(sin(angle));
+  rotate([0,-90,angle])
+  resize([0,squish(squish_angle),0])
+  translate([0,0,-lwidth/2])
+  linear_extrude(lwidth)
+  halfshell_curve();
+}
 
 module endcap() {
   union() {
 
     end_slider();
-    shell(slider_depth);
-
-    translate([0,slider_depth/2,0])
-    rotate ([0,-90,90]) linear_extrude(slider_depth)
-    resize([0,rear_end_radius + slider_depth,0])
-    halfshell_curve();
-
-
+    // TODO better way to close this surface.
+    for (angle = [0:180/60:180]) {
+      end_rib(angle);
+    }
   }
 }
 
@@ -226,4 +254,10 @@ module end_test() {
   sliders(23);
 }
 
+module end_cap_test() {
+  endcap();
+  end_stops(rear_end_radius + slider_depth);
+}
+
 battery_cover();
+
