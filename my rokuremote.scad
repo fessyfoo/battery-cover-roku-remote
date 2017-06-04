@@ -259,5 +259,6 @@ module end_cap_test() {
   end_stops(rear_end_radius + slider_depth);
 }
 
+rotate([0,90,0])
 battery_cover();
 
