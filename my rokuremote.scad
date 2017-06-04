@@ -17,7 +17,7 @@ rear_flat     = 10;
 rear_end_radius   = (width - rear_flat) / 2;
 rear_end_depth    = rear_end_radius + slider_depth;
 
-clip_length       = 10;
+clip_length       = 8;
 clip_gap_length   = 2.5;
 clip_catch_length = 4;
 clip_catch_height = 2.4;
