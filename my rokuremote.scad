@@ -37,68 +37,6 @@ module quartercircle(s = 1) {
         square(2);
     }
 }
-module arc90(h, w, t) {
-    difference() {
-        resize([w,h]) quartercircle();
-        resize([w-t,h-t,0]) quartercircle();
-    }
-}
-
-
-
-module halfcurve(w,ch,cw, t) {
-   translate([w-cw,0,0]) arc90(ch, cw, t);
-   translate([0,ch-t,0]) square([w-cw,t]);
-}
-module thecurve(w, ch, cw, t) {
-
-    rotate(-90) {
-        halfcurve(w/2,ch,cw, t);
-        mirror() halfcurve(w/2, ch, cw, t);
-    }
-}
-
-module long_edge() {
-    translate([-(length-height+slider_depth),-(width/2),0])
-    square([length-curve_height, thickness]);
-}
-
-module shell1_end() {
-  rotate([180,0,180])
-  linear_extrude(slider_depth) {
-    thecurve(width,curve_height, curve_width, thickness);
-  }
-}
-
-module slider() {
-  shell1_end();
-  sliders(length-curve_height);
-}
-
-module shell_body() {
-   
-    rotate([0,-90,180]) {
-        linear_extrude(length - curve_height  )
-            thecurve(width, curve_height, curve_width, thickness);
-        rotate(90, [1,0,0]) rotate_extrude(angle=-90) {    
-            translate([0.0000001,0,0]) // some bug with -0 ?
-            thecurve(width, curve_height, curve_width, thickness);
-        }
-    }
-}
-
-module shell() {
-   
-    shell_body();
-    slider();
-   
-    difference() {
-        notch_depth = 3;
-        slider();
-        translate([-curve_height, -1.5, slider_depth - notch_depth])
-            cube(notch_depth);
-    }
-}
 
 module stop() {
     translate([stop_depth,0,-stop_height/2])
@@ -173,7 +111,7 @@ shell_radius = (shell_height / 2) + ((width * width) / (8 * shell_height));
 
 echo(shell_radius, shell_height, width / 2);
 
-module halfshell2curve() {
+module halfshell_curve() {
 translate([shell_height - shell_radius, 0,0])
   difference() {
     quartercircle(shell_radius);
@@ -183,26 +121,16 @@ translate([shell_height - shell_radius, 0,0])
   }
 }
 
-module shell2curve() {
-  halfshell2curve();
-  mirror([0,1,0]) halfshell2curve();
+module shell_curve() {
+  halfshell_curve();
+  mirror([0,1,0]) halfshell_curve();
 }
 
-module shell2(length) {
+module shell(length) {
   rotate([180,-90,0])
-  linear_extrude(length) shell2curve();
+  linear_extrude(length) shell_curve();
 }
 
-
-module halfendradius() {
-  rear_flat = rear_stop_offset * 2;
-  radius = shell_height;
-
-  difference() {
-    quartercircle(radius);
-    quartercircle(radius - thickness);
-  }
-}
 
 module halfendcurve() {
   rear_flat = rear_stop_offset * 2;
@@ -222,50 +150,30 @@ module endcurve() {
   mirror([0,1,0]) halfendcurve();
 }
 
-module end_slider() {
-}
-
-module endthing() {
-  union() {
-
-    rotate([0,0,180])
-    translate([0,0,-slider_depth])
-    linear_extrude(slider_depth) endcurve();
-
-    shell2(5);
-
-    translate([0,2.5,0])
-    resize([rear_end_radius,0,0])
-    rotate ([0,-90,90]) linear_extrude(5) halfshell2curve();
-
-  }
-}
-
-
-module a_slider(length) {
+module slider(length) {
   translate([0,-width/2,-slider_depth])
   cube([length, thickness, slider_depth]);
 }
 
 module sliders(length) {
-  a_slider(length);
-  mirror([0,1,0]) a_slider(length);
+  slider(length);
+  mirror([0,1,0]) slider(length);
 }
 
 
-module endthing2() {
+module endcap() {
   union() {
 
     translate([-slider_depth,0,0]) // why did I add slider depth?
     rotate([0,180,0])
     linear_extrude(slider_depth) endcurve();
 
-    shell2(slider_depth);
+    shell(slider_depth);
 
     translate([0,slider_depth/2,0])
     rotate ([0,-90,90]) linear_extrude(slider_depth)
     resize([0,rear_end_radius + slider_depth,0])
-    halfshell2curve();
+    halfshell_curve();
 
     translate([-slider_depth,0,0])
     sliders(slider_depth*2);
@@ -273,28 +181,19 @@ module endthing2() {
   }
 }
 
-module oldthing() {
-  shell();
-  translate([length-height + slider_depth, 0, shell_height - thickness ])
-    clip();
-  stops();
-}
-
-module newthing() {
-  endthing2();
+module battery_cover() {
+  endcap();
 
   shell_length = (length - rear_end_depth);
-  shell2(shell_length);
+  shell(shell_length);
   sliders(shell_length);
-  stops(rear_end_radius + slider_depth, 1);
+  stops(rear_end_radius + slider_depth, 0);
   translate([shell_length, 0, shell_height - thickness ])
     clip();
 }
 
-rotate([0,0,0])
 difference () {
-  newthing();
-  translate([10, -width/2, 0])
+  battery_cover();
+  translate([10, -width/2, slider_depth])
   cube([(length - rear_end_depth )/2 - 10, width, 3]);
-
 }
