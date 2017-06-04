@@ -210,7 +210,7 @@ module endcap() {
 
     end_slider();
     // TODO better way to close this surface.
-    for (angle = [0:180/60:180]) {
+    for (angle = [0:180/30:180]) {
       end_rib(angle);
     }
   }
