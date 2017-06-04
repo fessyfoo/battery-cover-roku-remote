@@ -219,15 +219,32 @@ module endcap() {
   }
 }
 
-module battery_cover() {
-  endcap();
+module complete_shell(length = length - rear_end_depth) {
 
-  shell_length = (length - rear_end_depth);
-  shell(shell_length);
-  sliders(shell_length);
-  stops(rear_end_radius + slider_depth, 0);
-  translate([shell_length, 0, shell_height - thickness ])
+  difference() {
+    shell(length);
+
+    groove_radius   = thickness / 2;
+    groove_spacing  = groove_radius * 4;
+
+    for (i = [1:3]) {
+      translate([length - i * groove_spacing,-width/2,shell_height])
+      rotate([-90,0,0])
+      cylinder(width,groove_radius,groove_radius);
+    }
+  }
+
+  sliders(length);
+
+  translate([length, 0, shell_height - thickness ])
     clip();
+}
+
+
+module battery_cover() {
+  complete_shell();
+  endcap();
+  stops(rear_end_radius + slider_depth, 0);
 }
 
 module battery_cover_with_cutouts() {
